@@ -1,0 +1,1 @@
+int hostapd_pmf_capabilities(char*);

@@ -1,0 +1,6 @@
+*.a
+
+ca/wfa_ca
+dut/wfa_dut
+MrvlSigma_U16_bin/
+*.tgz

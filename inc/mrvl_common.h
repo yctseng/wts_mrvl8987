@@ -1,0 +1,23 @@
+char hexc2bin(char);
+unsigned int a2hex(char*);
+unsigned int get_bw_info(char *,int);
+unsigned int get_cmd_str(char *, char *, char *, char *,int);
+void timestamp(char *);
+void update_splChar_ssid ( char *);
+int system_with_log(char *);
+char * update_GrpCipher ( char * , char * );
+int read_role();
+int run_iwconfig(char *, char *, char *);
+void edit_config(char *, char *, char *, char *);
+void edit_config_1(char *, char *, char *, char *);
+int read_config (char *, char *, char *);
+int chk_ret_status();
+int useOpenSupplicant();
+int read_ini_config (char *, char *, char *, char *);
+int read_sigma_configuration_file(void);
+
+extern int set_dut_time ( int, int, int);
+extern int set_dut_date ( int, int, int);
+extern int process_generic_mlanutl_cmd ( char *, char*, int);
+extern int kill_wlan_utilities();
+extern int check_sigma_health_status();
