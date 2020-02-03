@@ -2591,9 +2591,9 @@ int invoke_dhcp_client ( char *ifname, int type  ) {
 		sprintf(gCmdStr, "netcfg %s dhcp",ifname);
 		system_with_log(gCmdStr);	
 #else 
-		sprintf(gCmdStr, "killall dhclient");
+		sprintf(gCmdStr, "killall udhcpc");
 		system_with_log(gCmdStr);
-		sprintf(gCmdStr, "dhclient %s",ifname);
+		sprintf(gCmdStr, "udhcpc -i %s",ifname);
 		system_with_log(gCmdStr);	
 #endif
 	} 

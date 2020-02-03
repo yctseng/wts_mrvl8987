@@ -1001,6 +1001,8 @@ int kill_wlan_utilities() {
 	system_with_log(gCmdStr);
 	sprintf(gCmdStr, "killall dnsmasq");
 	system_with_log(gCmdStr);
+	sprintf(gCmdStr, "killall udhcpc");
+	system_with_log(gCmdStr);
 
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
 		sprintf(gCmdStr, "killall MarvellWFDServer");
@@ -1042,7 +1044,7 @@ int launch_dhcp_server(char *ifname) {
 	{	
 		sprintf(gCmdStr,"%s ifconfig %s %s",DUT_CMD_PREFIX,ifname,mrvl_dhcp_info->dhcp_srv_ip);
 		system_with_log(gCmdStr);                      
-		sprintf(gCmdStr,"dnsmasq --no-daemon --no-resolv --no-poll --dhcp-script=/system/bin/dhcp_announce --dhcp-range=%s,1h",mrvl_dhcp_info->dhcp_range);
+		sprintf(gCmdStr,"dnsmasq --no-daemon --no-resolv --no-poll --dhcp-range=%s,1h",mrvl_dhcp_info->dhcp_range);
 		system_with_log(gCmdStr);
 		exit(0);
     }
