@@ -201,7 +201,7 @@ int launch_supplicant_file_instance ( char *ifname ) {
 	system_with_log(gCmdStr);
 	
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_P2P_PROG) || !strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
-		sprintf(gCmdStr, "%s/%s -D%s -i %s -c %s -ddd -N -D%s -i %s -c %s > %s &", APP_BIN_LOC,mrvl_WS_info->supplicant_bin, mrvl_WS_info->supplicant_ext, ifname, P2P_SUPPLICANT_CONF,mrvl_WS_info->supplicant_ext, mrvl_dut_info->sta_interface, mrvl_WS_info->supplicant_conf,   SUPP_LOG_FILE);
+		sprintf(gCmdStr, "%s/%s -u -D%s -i %s -c %s -ddd -N -D%s -i %s -c %s -O /var/run/wpa_supplicant > %s &", APP_BIN_LOC,mrvl_WS_info->supplicant_bin, mrvl_WS_info->supplicant_ext, ifname, P2P_SUPPLICANT_CONF,mrvl_WS_info->supplicant_ext, mrvl_dut_info->sta_interface, mrvl_WS_info->supplicant_conf,   SUPP_LOG_FILE);
 		system_with_log(gCmdStr);
 
 	} 
@@ -227,7 +227,7 @@ int launch_supplicant_file_instance ( char *ifname ) {
 	
 	{ 
 		/** Wait approx 5sec. for successfull supplicant invocation */
-		sprintf(gCmdStr, "%s/%s -D%s -i %s -c %s -ddd > %s &", APP_BIN_LOC,mrvl_WS_info->supplicant_bin, mrvl_WS_info->supplicant_ext, ifname, SUPPLICANT_CONF,SUPP_LOG_FILE);
+		sprintf(gCmdStr, "%s/%s -D%s -i %s -c %s -ddd -O /var/run/wpa_supplicant > %s &", APP_BIN_LOC,mrvl_WS_info->supplicant_bin, mrvl_WS_info->supplicant_ext, ifname, SUPPLICANT_CONF,SUPP_LOG_FILE);
 		system_with_log(gCmdStr);
 		sleep(5);	
 	}
