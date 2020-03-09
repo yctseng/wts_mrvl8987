@@ -11,7 +11,8 @@ all:
 	cp -rf utils/scripts/$(TARGET)/* MrvlSigma_$(TARGET)_bin/
 	cp -rf utils/scripts/common/* MrvlSigma_$(TARGET)_bin/
 	cp -rf utils/config/* MrvlSigma_$(TARGET)_bin/
-	dos2unix MrvlSigma_$(TARGET)_bin/*
+	cp mlanconfig mlanevent.exe mlanutl uaputl.exe wifidirectutl load unload dnsmasq ping MrvlSigma_$(TARGET)_bin/
+	#dos2unix MrvlSigma_$(TARGET)_bin/*
 clean:
 	for i in ${DIRS}; do \
 		$(MAKE) -C $$i clean || exit 1; \
