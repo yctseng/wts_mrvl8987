@@ -3758,7 +3758,9 @@ int wfaStaDevSendFrame(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
           {
               case WFD_FRAME_PRBREQ:
               {
-				/** send probe req */
+                /** send probe req */
+                // Fix 4.1.1
+                ret = set_supplicant_p2p_mode(mrvl_WS_info->p2p_ctrl_interface,"discover");
               }
               break;
 
