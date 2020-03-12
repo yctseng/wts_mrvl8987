@@ -4171,48 +4171,61 @@ int wfaStaGetParameter(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
 	dutCmdResponse_t infoResp;
 	dutCmdResponse_t *getrssiResp = &gGenericResp;
-	dutCommand_t *getrssi = (dutCommand_t *)caCmdBuf;
-	caStaGetParameter_t *staGetrssi= (caStaGetParameter_t *)caCmdBuf; //uncomment and use it
+	caStaGetParameter_t *staGetParam= (caStaGetParameter_t *)caCmdBuf; //uncomment and use it
 	caStaGetParameterResp_t *paramList = &infoResp.cmdru.getParamValue;
 	int ret;
-	int rssi_val;
+	ENTER( __func__ );	
 
-		
-		ENTER( __func__ );	
-{ if (staGetrssi->rssi_flag)
-	{	ret = fetch_sta_rssi(mrvl_dut_info->sta_interface,getrssiResp->cmdru.rssi);
+	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
+		// 6.1.1 get dev list part
+		if(staGetParam->getParamValue == eDiscoveredDevList )
+		{
+			// Get the discovered devices, make space seperated list and return, check list is not bigger than 128 bytes.
+			paramList->getParamType = eDiscoveredDevList;
+			get_discovered_list( mrvl_dut_info->p2p_interface, (char *)&paramList->devList );
+			infoResp.status = STATUS_COMPLETE;
+			wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
+			*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+			LEAVE( __func__ );
+			return WFA_SUCCESS;
+		}
+	}
+
+	if (staGetParam->rssi_flag)
+	{	
+		ret = fetch_sta_rssi(mrvl_dut_info->sta_interface,getrssiResp->cmdru.rssi);
 		if ( ret == FALSE ) {
-		DPRINT_INFO(WFA_OUT,"FETCH_STA_RSSI_returned False");
+			DPRINT_INFO(WFA_OUT,"FETCH_STA_RSSI_returned False\n");
 			getrssiResp->status = STATUS_ERROR;
-			wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, 4, (BYTE *)getrssiResp, respBuf);   
+			wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, 4, (BYTE *)getrssiResp, respBuf);
 			*respLen = WFA_TLV_HDR_LEN + 4;
 			LEAVE( __func__ );
 			return WFA_FAILURE;
 		}
 		else {
-		getrssiResp->status = STATUS_COMPLETE; 
-		//DPRINT_INFO(WFA_OUT,"FETCH_STA_RSSI_returned TRUE");
-		printf("\nThe returned RSSI is in string rssi and is ----%s----\n",getrssiResp->cmdru.rssi);
-		//DPRINT_INFO(WFA_OUT,"\nThe returned RSSI is in char string array rssi and is -\"%s\"",getrssiResp->cmdru.rssi);
-		//DPRINT_INFO(WFA_OUT,"\n Set the rssi_flag in DUT-CMD-RSP and the rssi_resp_flag in CA-CMD-RSP");
-		strcpy(paramList->rssi_resp,getrssiResp->cmdru.rssi);
-		printf("\nThe Returned RSSI Must BE \"%s\"\n",paramList->rssi_resp);
+			getrssiResp->status = STATUS_COMPLETE;
+			//DPRINT_INFO(WFA_OUT,"FETCH_STA_RSSI_returned TRUE");
+			printf("\nThe returned RSSI is in string rssi and is ----%s----\n",getrssiResp->cmdru.rssi);
+			//DPRINT_INFO(WFA_OUT,"\nThe returned RSSI is in char string array rssi and is -\"%s\"",getrssiResp->cmdru.rssi);
+			//DPRINT_INFO(WFA_OUT,"\n Set the rssi_flag in DUT-CMD-RSP and the rssi_resp_flag in CA-CMD-RSP");
+			strcpy(paramList->rssi_resp,getrssiResp->cmdru.rssi);
+			printf("\nThe Returned RSSI Must BE \"%s\"\n",paramList->rssi_resp);
+			infoResp.status = STATUS_COMPLETE;
+			wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
+			*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+			LEAVE( __func__ );
+			return WFA_SUCCESS;
+		}
+	}	
+	else {	
 		infoResp.status = STATUS_COMPLETE;
-	wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf); 
-	*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+		wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
+		*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
 		LEAVE( __func__ );
 		return WFA_SUCCESS;
-			}
-}	
-else 	
-{	infoResp.status = STATUS_COMPLETE;
-	wfaEncodeTLV(WFA_STA_GET_PARAMETER_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf); 
-	*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+	}
 	LEAVE( __func__ );
-	return WFA_SUCCESS;
 }
-			}
-			}
 
 
 int wfaStaSetSecurity(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)

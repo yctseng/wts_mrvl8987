@@ -1189,3 +1189,38 @@ void preset_wfd( char *ifname ) {
 	system_with_log(gCmdStr);
 	LEAVE( __func__ );
 }
+
+int read_line_from_file( char* filepath, char* buf, unsigned int max_string_len) {
+
+	int ret = -1;
+	if(!buf)
+		return ret;
+
+	FILE *tmpfd;
+	tmpfd = fopen("/tmp/p2p_devlist.txt", "r+");
+	if(tmpfd == NULL) {
+		LEAVE( __func__ );
+		return ret;
+	}
+
+	if( fgets( buf, max_string_len, tmpfd) == NULL ) {
+		fclose( tmpfd );
+		LEAVE( __func__ );
+		return ret;
+	}
+	fclose( tmpfd );
+	LEAVE( __func__ );
+	return ret;
+}
+
+void get_discovered_list( char *ifname,  char *devlist ) {
+	ENTER( __func__ );
+	sprintf(gCmdStr,"%s/%s -i %s p2p_peers | sed ':a;N;$!ba;s/\\n/ /g' > /tmp/p2p_devlist.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+	system_with_log(gCmdStr);
+	int ret;
+	if( devlist ) {
+		ret = read_line_from_file( "/tmp/p2p_devlist.txt", devlist, 256 );
+	}
+	DPRINT_INFO(WFA_OUT, "%s devlist:[%s]", __func__, devlist );
+	LEAVE( __func__ );
+}
