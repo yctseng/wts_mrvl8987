@@ -1180,3 +1180,12 @@ int invoke_acceptInvReq (char *ifname, char *devId) {
 	LEAVE( __func__ );
 	return TRUE;
 }
+
+void preset_wfd( char *ifname ) {
+	ENTER( __func__ );	
+	sprintf(gCmdStr,"%s/%s -i %s SET wifi_display 1",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+	system_with_log(gCmdStr);
+	sprintf(gCmdStr,"%s/%s -i %s WFD_SUBELEM_SET 0 000600111c4400c8",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+	system_with_log(gCmdStr);
+	LEAVE( __func__ );
+}

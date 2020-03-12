@@ -2234,6 +2234,10 @@ int wfaStaResetDefault(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
 		/** TODO */
+		launch_supplicant_file_instance( mrvl_dut_info->p2p_interface );
+		sleep(1);
+		// Fix 4.1.1
+		preset_wfd( mrvl_dut_info->p2p_interface );
 	} 
 
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_11N_PROG)) {
@@ -2705,6 +2709,10 @@ int wfaStaStartAutoGo(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 			*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
 			LEAVE ( __func__ );
 			return FALSE;
+		}
+		// Fix 4.1.4
+		if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
+			preset_wfd( mrvl_WS_info->p2p_ctrl_interface );
 		}
 		ret = get_supplicant_p2p_groupid(mrvl_WS_info->p2p_ctrl_interface,infoResp.cmdru.grpid);
 		
