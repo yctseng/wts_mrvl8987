@@ -146,7 +146,7 @@ extern int HOSTAPD;
 extern int MWIFIEX;
 extern int read_sigma_configuration_file(void);
 
-#define PROG_TABLE_LEN  22
+#define PROG_TABLE_LEN  23
 char sigma_prog_table [PROG_TABLE_LEN][64] = { "HE-STAUT" ,
 											  "VHT-STAUT" ,
 											   "VHT-STAUT-MWIFIEX" ,
@@ -169,6 +169,7 @@ char sigma_prog_table [PROG_TABLE_LEN][64] = { "HE-STAUT" ,
 											   "V-E-STAUT" ,
 											   "WPA3-STAUT" ,
 											   "WPA3-APUT-HOSTAPD" ,
+											   "WFD-WS" ,
 											  /* "MBO-STAUT" */ };
 	
 static int get_prog_index( char *prog_name ) {
@@ -272,7 +273,12 @@ main(int argc, char **argv)
 		strcpy(SIGMA_PROG_NAME,MRVL_P2P_PROG);
 		strcpy(SIGMA_PROG_UTILITY,WPA_SUPPLICANT);
 	}
-	
+
+	if (match == get_prog_index("WFD-WS")) {
+		strcpy(SIGMA_PROG_NAME,MRVL_WFD_PROG);
+		strcpy(SIGMA_PROG_UTILITY,WPA_SUPPLICANT);
+	}
+
 	if (match == get_prog_index("PMF-STAUT") || match == get_prog_index("PMF-STAUT-MWIFIEX") || match == get_prog_index("PMF-APUT-UAPUTL") || match == get_prog_index("PMF-APUT-HOSTAPD")) {
 		strcpy(SIGMA_PROG_NAME,MRVL_PMF_PROG);
 		if (match == get_prog_index("PMF-STAUT-MWIFIEX"))
