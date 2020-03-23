@@ -4490,7 +4490,24 @@ int wfaStaWpsEnterPin(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	int ret; 
 	ENTER( __func__ );
 	
-    char *pin =getStaWpsEnterPin-> wpsPin;
+	char *pin =getStaWpsEnterPin-> wpsPin;
+	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
+		printf("Ken %s intf:[%s] wpsPin:[%s] grpid_flag:[%u] grpId:[%s]", __func__,
+			getStaWpsEnterPin->intf, getStaWpsEnterPin->wpsPin, getStaWpsEnterPin->grpid_flag, getStaWpsEnterPin->grpId );
+
+		//6.1.2
+		ret = set_supplicant_wps_pin(mrvl_WS_info->p2p_ctrl_interface,pin);
+
+		strcpy(runtime_test_data->wps_pin,pin);
+		strcpy(runtime_test_data->wps_method,ENTER_WPS_PIN);	
+
+		infoResp.status = STATUS_COMPLETE;
+		wfaEncodeTLV(WFA_STA_WPS_ENTER_PIN_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
+		*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+		return WFA_SUCCESS;
+	}
+
+
 	if (!strcasecmp(SIGMA_PROG_UTILITY,WPA_SUPPLICANT)) {
 		if (runtime_test_data->autogo) {
 			ret = set_supplicant_wps_pin(mrvl_WS_info->p2p_ctrl_interface,pin);
