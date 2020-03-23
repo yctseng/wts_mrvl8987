@@ -834,19 +834,26 @@ int set_supplicant_ext_listen (char *ifname,int ext_listen_time_period, int ext_
 int supplicant_initiate_p2p_negotiation( char *ifname, char * devId, int intent_val, char * freq, char *wps_method, char *wps_pin) {
 	ENTER( __func__ );
 	int network_index; 
+
+	int go_intent = intent_val;
+	if(go_intent > 15)
+		go_intent = 15;
+	if(go_intent < 1)
+		go_intent = 1;
+
 	
 	sprintf(gCmdStr,"%s/%s -i %s p2p_find",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
 	system_with_log(gCmdStr);
 	sleep(2);	
 
 	if (!strcmp(wps_method,WPS_PBC)) { 
-		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s pbc persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,intent_val,freq);
+		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s pbc persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,go_intent,freq);
 	} 
 	if (!strcmp(wps_method,ENTER_WPS_PIN)) { 
-		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s %s keypad persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,wps_pin,intent_val,freq);
+		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s %s keypad persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,wps_pin,go_intent,freq);
 	}
 	if (!strcmp(wps_method,READ_WPS_PIN)) { 
-		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s %s display persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,wps_pin,intent_val,freq);
+		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s %s display persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,wps_pin,go_intent,freq);
 	}
     system_with_log(gCmdStr);	
 	
