@@ -7297,7 +7297,7 @@ int xcCmdProcStaStartWfdConnection(char *pcmdStr, BYTE *aBuf, int *aLen)
          for(tmp_cnt=0;;tmp_cnt++)
          {
              tmp_str = strtok_r(str, " ", &str);
-             if(str == NULL || str[0] == '\0')
+             if(tmp_str == NULL)
                  break;
     
              strncpy(staStartWfdConn->peer[tmp_cnt], tmp_str, WFA_MAC_ADDR_STR_LEN-1);
