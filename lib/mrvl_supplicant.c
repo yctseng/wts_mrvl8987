@@ -1193,11 +1193,11 @@ void preset_wfd( char *ifname ) {
 int read_line_from_file( char* filepath, char* buf, unsigned int max_string_len) {
 
 	int ret = -1;
-	if(!buf)
+	if(!buf || !filepath)
 		return ret;
 
 	FILE *tmpfd;
-	tmpfd = fopen("/tmp/p2p_devlist.txt", "r+");
+	tmpfd = fopen(filepath, "r+");
 	if(tmpfd == NULL) {
 		LEAVE( __func__ );
 		return ret;
