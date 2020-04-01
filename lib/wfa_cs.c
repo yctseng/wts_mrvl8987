@@ -2239,6 +2239,9 @@ int wfaStaResetDefault(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		// Fix 4.1.1
 		preset_wfd( mrvl_dut_info->p2p_interface );
 		launch_dhcp_server(mrvl_WS_info->p2p_ctrl_interface); 
+
+		sprintf(gCmdStr,"rm -f /tmp/*.txt");
+		system_with_log(gCmdStr);
 	} 
 
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_11N_PROG)) {
@@ -3950,22 +3953,52 @@ int wfaStaDevSendFrame(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 int wfaStaStartWfdConnection(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
 	dutCmdResponse_t infoResp;
-	caStaStartWfdConn_t *staStartWfdConn= (caStaStartWfdConn_t *)caCmdBuf; //uncomment and use it
+	caStaStartWfdConn_t *staStartWfdConn= (caStaStartWfdConn_t *)caCmdBuf;
 	ENTER( __func__ );
- 
-	/** TODO */
- 
-	strcpy(&infoResp.cmdru.wfdConnInfo.wfdSessionId[0], "1234567890");
-	strcpy(&infoResp.cmdru.wfdConnInfo.p2pGrpId[0], "WIFI_DISPLAY"); 
-	strcpy(&infoResp.cmdru.wfdConnInfo.result[0], "GO"); 
 
-	infoResp.status = STATUS_COMPLETE;
+	int freq = channel_to_frequency(staStartWfdConn->oper_chn);
+	supplicant_remove_network(mrvl_WS_info->p2p_interface);
+	supplicant_initiate_p2p_negotiation(mrvl_WS_info->p2p_ctrl_interface,staStartWfdConn->peer[0],1,freq,runtime_test_data->wps_method,runtime_test_data->wps_pin);
+
+	char tmp_str[50];
+	char tmp_str2[50];
+	int ret = -1;
+	infoResp.status = STATUS_ERROR;
+	char* ifname = mrvl_WS_info->p2p_interface;
+
+	// startwfdconn.sh should trigger the miracast connection and dump the session id to /wfd_session
+	sprintf(gCmdStr, "%s/startwfdconn.sh %s > /tmp/wfdconn_sessionid.txt 2>&1",APP_BIN_LOC, staStartWfdConn->peer[0]);
+	system_with_log(gCmdStr);
+	ret = read_line_from_file("/wfd_session", tmp_str, 50);
+	if(ret > 0) {
+		strcpy(&infoResp.cmdru.wfdConnInfo.wfdSessionId[0], tmp_str);
+		printf("%s:%d wfdsessionid:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.wfdSessionId);
+		
+		sprintf(gCmdStr, "%s/%s -i %s status | grep ^bssid | cut -d= -f2 > /tmp/wfd_bssid.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+		system_with_log(gCmdStr);
+		ret = read_line_from_file("/tmp/wfd_bssid.txt", tmp_str, 50);
+
+		sprintf(gCmdStr, "%s/%s -i %s status | grep ^ssid | cut -d= -f2 > /tmp/wfd_ssid.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+		system_with_log(gCmdStr);
+		ret = read_line_from_file("/tmp/wfd_ssid.txt", tmp_str2, 50);
+
+		sprintf(&infoResp.cmdru.wfdConnInfo.p2pGrpId[0], "%s %s", tmp_str, tmp_str2); 
+		printf("%s:%d group id:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.p2pGrpId);
+		
+		sprintf(gCmdStr, "%s/%s -i %s status | grep mode | cut -d= -f2 > /tmp/wfd_role.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+		system_with_log(gCmdStr);
+		ret = read_line_from_file("/tmp/wfd_role.txt", tmp_str, 50);
+		if(ret >0) {
+			strcpy(&infoResp.cmdru.wfdConnInfo.result[0], (strncmp(tmp_str, "P2P GO", 6) ? "CLIENT" : "GO"));
+			printf("%s:%d role:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.result);
+		}
+		infoResp.status = STATUS_COMPLETE;
+	}
 	wfaEncodeTLV(WFA_STA_START_WFD_CONNECTION_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf); 
 	*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
 	LEAVE( __func__ );
 	return WFA_SUCCESS;
 }
-
 
 int wfaStaCliCommand(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
@@ -4492,9 +4525,6 @@ int wfaStaWpsEnterPin(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	
 	char *pin =getStaWpsEnterPin-> wpsPin;
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
-		printf("Ken %s intf:[%s] wpsPin:[%s] grpid_flag:[%u] grpId:[%s]", __func__,
-			getStaWpsEnterPin->intf, getStaWpsEnterPin->wpsPin, getStaWpsEnterPin->grpid_flag, getStaWpsEnterPin->grpId );
-
 		//6.1.2
 		ret = set_supplicant_wps_pin(mrvl_WS_info->p2p_ctrl_interface,pin);
 

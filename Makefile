@@ -9,6 +9,7 @@ all:
 	cp dut/wfa_dut MrvlSigma_$(TARGET)_bin/wfa_dut
 	cp ca/wfa_ca MrvlSigma_$(TARGET)_bin/wfa_ca
 	cp -rf utils/scripts/$(TARGET)/* MrvlSigma_$(TARGET)_bin/
+	cp -rf utils/scripts/Lawrence/* MrvlSigma_$(TARGET)_bin/
 	cp -rf utils/scripts/common/* MrvlSigma_$(TARGET)_bin/
 	cp -rf utils/config/* MrvlSigma_$(TARGET)_bin/
 	cp mlanconfig mlanevent.exe mlanutl uaputl.exe wifidirectutl load unload dnsmasq ping MrvlSigma_$(TARGET)_bin/

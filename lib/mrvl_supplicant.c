@@ -201,7 +201,7 @@ int launch_supplicant_file_instance ( char *ifname ) {
 	system_with_log(gCmdStr);
 	
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_P2P_PROG) || !strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
-		sprintf(gCmdStr, "%s/%s -u -D%s -i %s -c %s -ddd -N -D%s -i %s -c %s -O /var/run/wpa_supplicant > %s &", APP_BIN_LOC,mrvl_WS_info->supplicant_bin, mrvl_WS_info->supplicant_ext, ifname, P2P_SUPPLICANT_CONF,mrvl_WS_info->supplicant_ext, mrvl_dut_info->sta_interface, mrvl_WS_info->supplicant_conf,   SUPP_LOG_FILE);
+		sprintf(gCmdStr, "%s/%s -D%s -i %s -c %s -ddd -N -D%s -i %s -c %s -O /var/run/wpa_supplicant > %s &", APP_BIN_LOC,mrvl_WS_info->supplicant_bin, mrvl_WS_info->supplicant_ext, ifname, P2P_SUPPLICANT_CONF,mrvl_WS_info->supplicant_ext, mrvl_dut_info->sta_interface, mrvl_WS_info->supplicant_conf, SUPP_LOG_FILE);
 		system_with_log(gCmdStr);
 
 	} 
@@ -823,6 +823,14 @@ int enable_supplicant_cross_connect (char *ifname) {
 	return TRUE;
 }
 
+void supplicant_remove_network(char* ifname)
+{
+	ENTER( __func__ );
+	sprintf(gCmdStr, "%s/%s -i%s remove_network 0", APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+	system_with_log(gCmdStr);
+	LEAVE( __func__ );
+}
+
 int set_supplicant_ext_listen (char *ifname,int ext_listen_time_period, int ext_listen_time_int) {
 	ENTER( __func__ );
 	sprintf(gCmdStr, "%s/%s -i%s p2p_ext_listen %d %d", APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,ext_listen_time_period,ext_listen_time_int);
@@ -841,10 +849,9 @@ int supplicant_initiate_p2p_negotiation( char *ifname, char * devId, int intent_
 	if(go_intent < 1)
 		go_intent = 1;
 
-	
 	sprintf(gCmdStr,"%s/%s -i %s p2p_find",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
 	system_with_log(gCmdStr);
-	sleep(2);	
+	sleep(10);	
 
 	if (!strcmp(wps_method,WPS_PBC)) { 
 		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s pbc persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,go_intent,freq);
@@ -855,15 +862,16 @@ int supplicant_initiate_p2p_negotiation( char *ifname, char * devId, int intent_
 	if (!strcmp(wps_method,READ_WPS_PIN)) { 
 		sprintf(gCmdStr, "%s/%s -i %s p2p_connect %s %s display persistent go_intent=%d freq=%d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,devId,wps_pin,go_intent,freq);
 	}
-    system_with_log(gCmdStr);	
+	system_with_log(gCmdStr);	
 	
 	/** TODO: Need to check Negotiation Event in WPA Supplicant log*/
-	sleep(15);
+	sleep(10);
 	
 	network_index = get_active_network_index();
-    if (network_index == -1 ) {
-	    return FALSE;
-    }
+	printf("%s network_index:[%d]\n",__func__, network_index);
+	if (network_index == -1) {
+		return FALSE;
+	}
 	LEAVE( __func__ );
 	return TRUE;
 }
@@ -1195,29 +1203,6 @@ void preset_wfd( char *ifname ) {
 	sprintf(gCmdStr,"%s/%s -i %s WFD_SUBELEM_SET 0 000600111c4400c8",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
 	system_with_log(gCmdStr);
 	LEAVE( __func__ );
-}
-
-int read_line_from_file( char* filepath, char* buf, unsigned int max_string_len) {
-
-	int ret = -1;
-	if(!buf || !filepath)
-		return ret;
-
-	FILE *tmpfd;
-	tmpfd = fopen(filepath, "r+");
-	if(tmpfd == NULL) {
-		LEAVE( __func__ );
-		return ret;
-	}
-
-	if( fgets( buf, max_string_len, tmpfd) == NULL ) {
-		fclose( tmpfd );
-		LEAVE( __func__ );
-		return ret;
-	}
-	fclose( tmpfd );
-	LEAVE( __func__ );
-	return ret;
 }
 
 void get_discovered_list( char *ifname,  char *devlist ) {

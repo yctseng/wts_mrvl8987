@@ -1050,3 +1050,33 @@ int launch_dhcp_server(char *ifname) {
     }
 	LEAVE( __func__ );
 }  
+
+int read_line_from_file( char* filepath, char* buf, unsigned int max_string_len) {
+
+	ENTER( __func__ );
+	int len = -1;
+	if(!buf || !filepath)
+		return len;
+
+	FILE *tmpfd;
+	tmpfd = fopen(filepath, "r+");
+	if(tmpfd == NULL) {
+		LEAVE( __func__ );
+		return len;
+	}
+	if( fgets( buf, max_string_len, tmpfd) == NULL ) {
+		fclose( tmpfd );
+		LEAVE( __func__ );
+		return len;
+	}
+	len = strlen( buf );
+	if( buf[len - 1] == '\n' ) {
+		buf[len - 1] = '\0';
+		len -= 1;
+	}
+	fclose( tmpfd );
+
+	printf("%s filepath:[%s] line:[%s] len:[%d]\n", __func__, filepath, buf, len);
+	LEAVE( __func__ );
+	return len;
+}
