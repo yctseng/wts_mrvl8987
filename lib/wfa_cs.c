@@ -3792,13 +3792,13 @@ int wfaStaDevSendFrame(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 					fetch the type of RTSP message and send it. */
                     switch(wfd->eRtspMsgType) {
 						case WFD_RTSP_PAUSE:
-				      
+						system_with_log("dbus-send --system --print-reply --reply-timeout=2000 --type=method_call --dest=com.garmin.DBus.Miracast /com/garmin/DBus/Miracast/MiracastManager com.garmin.DBus.Miracast.MiracastManager.Setup string:PAUSE");
 						break;
 						case WFD_RTSP_PLAY:
-												
+						system_with_log("dbus-send --system --print-reply --reply-timeout=2000 --type=method_call --dest=com.garmin.DBus.Miracast /com/garmin/DBus/Miracast/MiracastManager com.garmin.DBus.Miracast.MiracastManager.Setup string:PLAY");
 						break;
 						case WFD_RTSP_TEARDOWN:
-			         
+						system_with_log("dbus-send --system --print-reply --reply-timeout=2000 --type=method_call --dest=com.garmin.DBus.Miracast /com/garmin/DBus/Miracast/MiracastManager com.garmin.DBus.Miracast.MiracastManager.Setup string:TEARDOWN");
 						break;
 						case WFD_RTSP_TRIG_PAUSE:
 						
