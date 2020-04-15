@@ -1,5 +1,5 @@
 include Makefile.inc
-DIRS= ${LIB} ${DUT} ${CA} ${TC}
+DIRS= ${LIB} ${DUT} ${CA} ${TC} platform_tools
 all:
 	for i in ${DIRS}; do \
 		$(MAKE) -C $$i || exit 1; \
@@ -11,6 +11,8 @@ all:
 	cp -rf utils/scripts/$(TARGET)/* MrvlSigma_$(TARGET)_bin/
 	cp -rf utils/scripts/common/* MrvlSigma_$(TARGET)_bin/
 	cp -rf utils/config/* MrvlSigma_$(TARGET)_bin/
+	cp platform_tools/hostap/hostapd/hostapd_cli MrvlSigma_$(TARGET)_bin/
+	cp platform_tools/hostap/hostapd/hostapd MrvlSigma_$(TARGET)_bin/
 clean:
 	for i in ${DIRS}; do \
 		$(MAKE) -C $$i clean || exit 1; \
