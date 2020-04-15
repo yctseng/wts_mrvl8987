@@ -2,7 +2,7 @@
 ###FOR PXA, We use a perl wrapper over gcc (agcc). THis is necessary since Android uses bionic not libc
 #CC = agcc 
 
-TARGET=U16
+TARGET=Lawrence
 LIB=lib
 DUT=dut
 CA=ca
