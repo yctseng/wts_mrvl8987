@@ -20,6 +20,12 @@ echo "interface_addr:$interface_addr"
 ip=`./busybox.nosuid arp -a | grep $interface_addr | cut -d\( -f2 | cut -d\) -f1`
 ./busybox.nosuid arp -a > /tmp/arp_result.txt 2>&1
 
+if [ "x$ip" = "x" ]; then
+    # workaround for 6.1.3
+    echo "Can't find IP in arp table. Use default 192.168.16.2"
+    ip="192.168.16.2"
+fi
+
 echo "ip:$ip"
 dbus-send --system --print-reply --reply-timeout=2000 --type=method_call --dest=com.garmin.DBus.Miracast /com/garmin/DBus/Miracast/MiracastManager com.garmin.DBus.Miracast.MiracastManager.Setup string:{\"rtsp_connect\":\"$ip\;$port\"}
 
