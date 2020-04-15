@@ -11,6 +11,7 @@ all:
 	cp -rf utils/scripts/$(TARGET)/* MrvlWTS_$(TARGET)_bin/
 	cp -rf utils/scripts/common/* MrvlWTS_$(TARGET)_bin/
 	cp -rf utils/config/* MrvlWTS_$(TARGET)_bin/
+	cp load unload MrvlWTS_$(TARGET)_bin/
 	cp platform_tools/hostap/hostapd/hostapd_cli MrvlWTS_$(TARGET)_bin/
 	cp platform_tools/hostap/hostapd/hostapd MrvlWTS_$(TARGET)_bin/
 	cp platform_tools/ping MrvlWTS_$(TARGET)_bin/
