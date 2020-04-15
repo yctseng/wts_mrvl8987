@@ -2,5 +2,5 @@
 
 ca/wfa_ca
 dut/wfa_dut
-MrvlSigma_*_bin/
+MrvlWTS_*_bin/
 *.tgz
