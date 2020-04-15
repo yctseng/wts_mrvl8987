@@ -1,0 +1,3 @@
+[submodule "platform_tools/hostap"]
+	path = platform_tools/hostap
+	url = git://w1.fi/srv/git/hostap.git
