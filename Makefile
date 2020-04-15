@@ -13,6 +13,8 @@ all:
 	cp -rf utils/config/* MrvlWTS_$(TARGET)_bin/
 	cp platform_tools/hostap/hostapd/hostapd_cli MrvlWTS_$(TARGET)_bin/
 	cp platform_tools/hostap/hostapd/hostapd MrvlWTS_$(TARGET)_bin/
+	cp platform_tools/ping MrvlWTS_$(TARGET)_bin/
+	cp platform_tools/dnsmasq MrvlWTS_$(TARGET)_bin/
 clean:
 	for i in ${DIRS}; do \
 		$(MAKE) -C $$i clean || exit 1; \
