@@ -4117,18 +4117,33 @@ int wfaStaCliCommand(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 
 int wfaStaConnectGoStartWfd(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 {
-    dutCmdResponse_t infoResp;
+	dutCmdResponse_t infoResp;
 	caStaConnectGoStartWfd_t *staConnecGoStartWfd = (caStaConnectGoStartWfd_t *)caCmdBuf; 
- 	ENTER( __func__ );
- 
-	/** TODO */
-    
-    strcpy(&infoResp.cmdru.wfdConnInfo.wfdSessionId[0], "1234567890");
-    infoResp.status = STATUS_COMPLETE;
-    wfaEncodeTLV(WFA_STA_CONNECT_GO_START_WFD_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf); 
-    *respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
-	LEAVE( __func__ );   
-    return WFA_SUCCESS;
+	ENTER( __func__ );
+	char* ifname = mrvl_WS_info->p2p_ctrl_interface;
+	char tmp_str[50];
+	int ret;
+
+	infoResp.cmdru.wfdConnInfo.wfdSessionId[0] = '\0';
+	infoResp.cmdru.wfdConnInfo.p2pGrpId[0] = '\0';
+	infoResp.cmdru.wfdConnInfo.result[0] = '\0';
+
+	set_supplicant_p2p_wps(ifname, staConnecGoStartWfd->devId, runtime_test_data->wps_method, runtime_test_data->wps_pin);
+	
+	// startwfdconn.sh should trigger the miracast connection and dump the session id to /wfd_session
+	sprintf(gCmdStr, "%s/startwfdconn.sh %s > /tmp/wfdconn_sessionid.txt 2>&1",APP_BIN_LOC, staConnecGoStartWfd->devId);
+	system_with_log(gCmdStr);
+	ret = read_line_from_file("/wfd_session", tmp_str, 50);
+	if(ret > 0) {
+		strcpy(&infoResp.cmdru.wfdConnInfo.wfdSessionId[0], tmp_str);
+		printf("%s:%d wfdsessionid:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.wfdSessionId);
+	}
+
+	infoResp.status = STATUS_COMPLETE;
+	wfaEncodeTLV(WFA_STA_CONNECT_GO_START_WFD_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf);
+	*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
+	LEAVE( __func__ );
+	return WFA_SUCCESS;
 }
 
 /*
@@ -4526,8 +4541,6 @@ int wfaStaWpsEnterPin(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 	char *pin =getStaWpsEnterPin-> wpsPin;
 	if (!strcasecmp(SIGMA_PROG_NAME,MRVL_WFD_PROG)) {
 		//6.1.2
-		ret = set_supplicant_wps_pin(mrvl_WS_info->p2p_ctrl_interface,pin);
-
 		strcpy(runtime_test_data->wps_pin,pin);
 		strcpy(runtime_test_data->wps_method,ENTER_WPS_PIN);	
 
