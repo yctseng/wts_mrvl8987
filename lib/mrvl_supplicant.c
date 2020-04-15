@@ -846,8 +846,8 @@ int supplicant_initiate_p2p_negotiation( char *ifname, char * devId, int intent_
 	int go_intent = intent_val;
 	if(go_intent > 15)
 		go_intent = 15;
-	if(go_intent < 1)
-		go_intent = 1;
+	if(go_intent < 0)
+		go_intent = 0;
 
 	sprintf(gCmdStr,"%s/%s -i %s p2p_find",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
 	system_with_log(gCmdStr);
@@ -1014,12 +1014,19 @@ int set_supplicant_readpin (char *ifname, char *wps_pin) {
 	return TRUE;
 }
 
+int set_p2p_oper_channel( char *ifname, int channel) {
+	ENTER( __func__ );
+	sprintf(gCmdStr,"%s/%s -i %s set p2p_oper_channel %d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,channel);
+    system_with_log(gCmdStr);
+	return TRUE;
+}
+
 int enable_supplicant_p2p_go ( char *ifname, char * ssid, int channel) {
 	ENTER( __func__ );
 	int network_index;
 	sprintf(gCmdStr,"%s/%s -i %s p2p_flush",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
     system_with_log(gCmdStr);
-	sprintf(gCmdStr,"%s/%s -i %s p2p_oper_channel %d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,channel);
+	sprintf(gCmdStr,"%s/%s -i %s set p2p_oper_channel %d",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname,channel);
     system_with_log(gCmdStr);
 	sprintf(gCmdStr,"%s/%s -i %s p2p_find",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
     system_with_log(gCmdStr);

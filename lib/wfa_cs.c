@@ -3956,44 +3956,80 @@ int wfaStaStartWfdConnection(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBu
 	caStaStartWfdConn_t *staStartWfdConn= (caStaStartWfdConn_t *)caCmdBuf;
 	ENTER( __func__ );
 
-	int freq = channel_to_frequency(staStartWfdConn->oper_chn);
-	supplicant_remove_network(mrvl_WS_info->p2p_interface);
-	supplicant_initiate_p2p_negotiation(mrvl_WS_info->p2p_ctrl_interface,staStartWfdConn->peer[0],1,freq,runtime_test_data->wps_method,runtime_test_data->wps_pin);
-
 	char tmp_str[50];
 	char tmp_str2[50];
 	int ret = -1;
-	infoResp.status = STATUS_ERROR;
+	int wfd_session_available = 0;
 	char* ifname = mrvl_WS_info->p2p_interface;
+	int freq = channel_to_frequency(staStartWfdConn->oper_chn);
 
-	// startwfdconn.sh should trigger the miracast connection and dump the session id to /wfd_session
-	sprintf(gCmdStr, "%s/startwfdconn.sh %s > /tmp/wfdconn_sessionid.txt 2>&1",APP_BIN_LOC, staStartWfdConn->peer[0]);
+	infoResp.cmdru.wfdConnInfo.wfdSessionId[0] = '\0';
+	infoResp.cmdru.wfdConnInfo.p2pGrpId[0] = '\0';
+	infoResp.cmdru.wfdConnInfo.result[0] = '\0';
+
+	// Fix 6.1.19
+	// Check the avail bits in wfd_subelements to determine to start wfd connection or not.
+	// Refer to "Table 29. WFD Device Information Field" in Wi-Fi Display technical sepcification 2.1
+	// e.g. wfd_subelems=000006001100000032
+	//                         0011
+	// bit 5:4  --> WFD Session Availability bits
+	//			0b00: Not available for WFD Session
+	//			0b01: Available for WFD Session
+	sprintf(gCmdStr, "%s/%s -i %s p2p_peer %s | grep ^wfd_subelems | cut -d= -f2 | cut -b 9 > /tmp/peer_wfd_subelements.txt",
+		APP_BIN_LOC, mrvl_WS_info->supplicant_cli_bin,ifname, staStartWfdConn->peer[0]);
 	system_with_log(gCmdStr);
-	ret = read_line_from_file("/wfd_session", tmp_str, 50);
-	if(ret > 0) {
-		strcpy(&infoResp.cmdru.wfdConnInfo.wfdSessionId[0], tmp_str);
-		printf("%s:%d wfdsessionid:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.wfdSessionId);
-		
-		sprintf(gCmdStr, "%s/%s -i %s status | grep ^bssid | cut -d= -f2 > /tmp/wfd_bssid.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
-		system_with_log(gCmdStr);
-		ret = read_line_from_file("/tmp/wfd_bssid.txt", tmp_str, 50);
-
-		sprintf(gCmdStr, "%s/%s -i %s status | grep ^ssid | cut -d= -f2 > /tmp/wfd_ssid.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
-		system_with_log(gCmdStr);
-		ret = read_line_from_file("/tmp/wfd_ssid.txt", tmp_str2, 50);
-
-		sprintf(&infoResp.cmdru.wfdConnInfo.p2pGrpId[0], "%s %s", tmp_str, tmp_str2); 
-		printf("%s:%d group id:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.p2pGrpId);
-		
-		sprintf(gCmdStr, "%s/%s -i %s status | grep mode | cut -d= -f2 > /tmp/wfd_role.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
-		system_with_log(gCmdStr);
-		ret = read_line_from_file("/tmp/wfd_role.txt", tmp_str, 50);
-		if(ret >0) {
-			strcpy(&infoResp.cmdru.wfdConnInfo.result[0], (strncmp(tmp_str, "P2P GO", 6) ? "CLIENT" : "GO"));
-			printf("%s:%d role:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.result);
-		}
-		infoResp.status = STATUS_COMPLETE;
+	ret = read_line_from_file("/tmp/peer_wfd_subelements.txt", tmp_str, 50);
+	if( ret > 0 ) {
+		printf("%s check avail byte:[%s]\n", __func__, tmp_str);
+		wfd_session_available = strtol(tmp_str, NULL, 16) & 0x01;
+		printf("%s wfd_session_available:[%d]\n", __func__, wfd_session_available);
 	}
+	else {
+		printf("%s invalid wfd_subelems:[%s]\n", __func__, tmp_str);
+	}
+
+	if(wfd_session_available) {
+	
+		set_p2p_oper_channel(ifname, staStartWfdConn->oper_chn);
+		if(staStartWfdConn->init_wfd) {
+			supplicant_initiate_p2p_negotiation(mrvl_WS_info->p2p_ctrl_interface,staStartWfdConn->peer[0],0,freq,runtime_test_data->wps_method,runtime_test_data->wps_pin);
+			// startwfdconn.sh should trigger the miracast connection and dump the session id to /wfd_session
+			sprintf(gCmdStr, "%s/startwfdconn.sh %s > /tmp/wfdconn_sessionid.txt 2>&1",APP_BIN_LOC, staStartWfdConn->peer[0]);
+			system_with_log(gCmdStr);
+			ret = read_line_from_file("/wfd_session", tmp_str, 50);
+			if(ret > 0) {
+				strcpy(&infoResp.cmdru.wfdConnInfo.wfdSessionId[0], tmp_str);
+				printf("%s:%d wfdsessionid:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.wfdSessionId);
+				
+				sprintf(gCmdStr, "%s/%s -i %s status | grep ^bssid | cut -d= -f2 > /tmp/wfd_bssid.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+				system_with_log(gCmdStr);
+				ret = read_line_from_file("/tmp/wfd_bssid.txt", tmp_str, 50);
+	
+				sprintf(gCmdStr, "%s/%s -i %s status | grep ^ssid | cut -d= -f2 > /tmp/wfd_ssid.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+				system_with_log(gCmdStr);
+				ret = read_line_from_file("/tmp/wfd_ssid.txt", tmp_str2, 50);
+	
+				sprintf(&infoResp.cmdru.wfdConnInfo.p2pGrpId[0], "%s %s", tmp_str, tmp_str2); 
+				printf("%s:%d group id:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.p2pGrpId);
+				
+				sprintf(gCmdStr, "%s/%s -i %s status | grep mode | cut -d= -f2 > /tmp/wfd_role.txt",APP_BIN_LOC,mrvl_WS_info->supplicant_cli_bin,ifname);
+				system_with_log(gCmdStr);
+				ret = read_line_from_file("/tmp/wfd_role.txt", tmp_str, 50);
+				if(ret >0) {
+					strcpy(&infoResp.cmdru.wfdConnInfo.result[0], (strncmp(tmp_str, "P2P GO", 6) ? "CLIENT" : "GO"));
+					printf("%s:%d role:[%s]\n", __func__,  __LINE__, infoResp.cmdru.wfdConnInfo.result);
+				}
+			}
+		}
+		else
+		{
+			// Fix 6.1.8
+			sprintf(gCmdStr, "%s/startwfdconn_accept_pin.sh %s %s &",APP_BIN_LOC, staStartWfdConn->peer[0],runtime_test_data->wps_pin);
+			system_with_log(gCmdStr);
+		}
+	}
+
+	infoResp.status = STATUS_COMPLETE;
 	wfaEncodeTLV(WFA_STA_START_WFD_CONNECTION_RESP_TLV, sizeof(infoResp), (BYTE *)&infoResp, respBuf); 
 	*respLen = WFA_TLV_HDR_LEN + sizeof(infoResp);
 	LEAVE( __func__ );
