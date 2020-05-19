@@ -46,7 +46,7 @@ int generate_hostapd_conf () {
      ENTER( __func__ );
      FILE *fp,*fp_ref;
      int ret; 
-	 char ch;
+	 int ch;
      ret = access(HOSTAPD_CONF, F_OK);	
      if (ret == -1) {  				
 	     fp = fopen(HOSTAPD_CONF,"w");
