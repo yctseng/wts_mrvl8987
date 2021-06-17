@@ -388,3 +388,9 @@ CONFIG_HS20=y
 # release under this optional build parameter. This functionality is subject to
 # be completely removed in a future release.
 #CONFIG_WEP=y
+
+# SAE
+CONFIG_SAE=y
+CONFIG_IEEE80211W=y
+CONFIG_TLS=openssl
+
