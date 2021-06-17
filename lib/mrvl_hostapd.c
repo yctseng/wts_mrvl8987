@@ -46,7 +46,7 @@ int generate_hostapd_conf () {
      ENTER( __func__ );
      FILE *fp,*fp_ref;
      int ret; 
-	 char ch;
+	 int ch;
      ret = access(HOSTAPD_CONF, F_OK);	
      if (ret == -1) {  				
 	     fp = fopen(HOSTAPD_CONF,"w");
@@ -54,7 +54,16 @@ int generate_hostapd_conf () {
 			LEAVE( __func__ );
 			return FALSE;
 	     }
-		 ret = access("hostapd_init.conf", F_OK);
+
+	char *init_file_name = "hostapd_init.conf";
+	if ( !strcasecmp(SIGMA_PROG_NAME,MRVL_VHT_PROG) ) {
+		init_file_name = "hostapd_init_vht.conf";
+	}
+	else if ( !strcasecmp(SIGMA_PROG_NAME,MRVL_11N_PROG) ) {
+		init_file_name = "hostapd_init_11n.conf";
+	}
+	ret = access(init_file_name, F_OK);
+
 		 if (ret == -1 ) {	 
 			 fprintf(fp,"ctrl_interface=%s\n",HOSTAPD_CTRL_PATH);
 			 fprintf(fp,"interface=%s\n",mrvl_dut_info->mmh_interface);
@@ -64,8 +73,8 @@ int generate_hostapd_conf () {
 			 fprintf(fp,"wmm_enabled=1\n");
 			 fclose(fp);
 		 } else {
-			 printf("INITIALIZING HOSTAPD CONF FROM 'hostapd_init.conf' file...\n");
-			 fp_ref = fopen("hostapd_init.conf","r");
+			 printf("INITIALIZING HOSTAPD CONF FROM '%s' file...\n", init_file_name);
+			 fp_ref = fopen(init_file_name,"r");
 			 while (1) {
 				ch = fgetc(fp_ref);
 				if (ch == EOF) {
