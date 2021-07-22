@@ -1,5 +1,7 @@
 #!/bin/bash
 #cardctl resume
+mount -o rw,remount /
+sed -i -e 's/drv_mode=[1-9]/drv_mode=7/g' /etc/modprobe.d/sd8xxx.conf
 if echo $1 2>&1 | grep dbg > /dev/null; then
 	insmod //lib/modules/4.9.8/extra/mlan-dbg.ko
 else
