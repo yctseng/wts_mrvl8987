@@ -4953,6 +4953,10 @@ int wfaAPConfigCommit(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		sprintf(gCmdStr,"rm -rf %s",HOSTAPD_CONF);
 		system_with_log(gCmdStr);
 
+		// Workaround for WPA2 SI 4.2.3
+		sprintf(gCmdStr,"./ch_wpa2_423.sh hostapd_test.conf");
+		system_with_log(gCmdStr);
+
 		sprintf(gCmdStr, "./%s hostapd_test.conf > hostapd.log &",mrvl_hostapd_info->hostapd_bin);
 		system_with_log(gCmdStr);
 		sleep(5);
