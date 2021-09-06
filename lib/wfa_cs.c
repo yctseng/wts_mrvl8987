@@ -4960,6 +4960,7 @@ int wfaAPConfigCommit(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
 		sprintf(gCmdStr, "./%s hostapd_test.conf > hostapd.log &",mrvl_hostapd_info->hostapd_bin);
 		system_with_log(gCmdStr);
 		sleep(5);
+
 		apConfigCommitResp->status = STATUS_COMPLETE;
 		wfaEncodeTLV(WFA_AP_CONFIG_COMMIT_TLV, sizeof(dutCmdResponse_t), (BYTE *)apConfigCommitResp, respBuf);   
 		*respLen = WFA_TLV_HDR_LEN + sizeof(dutCmdResponse_t);
@@ -4991,6 +4992,11 @@ int wfaAPConfigCommit(int len, BYTE *caCmdBuf, int *respLen, BYTE *respBuf)
         ap_use_hostapd = 0;
 
         sleep(5);
+
+        // Workaround for 11n 4.2.40 config APMDU setting
+        sprintf(gCmdStr,"./ch_11n_4_2_40_AMPDU.sh hostapd_test.conf");
+        system_with_log(gCmdStr);
+
         sprintf(gCmdStr, "%s/start-cert-ap.sh %d",   ch);
         system_with_log(gCmdStr);
 
